@@ -21,6 +21,10 @@ app.use("/reviewers", reviewerRoute);
 
 const port = 4000;
 
+app.get("/health-check", (req, res) => {
+  res.json({ status: true, message: "Server is up and running" });
+});
+
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
