@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  email          String         @unique
+  name           String
+  password       String
+  about          String?
+  role           UserRole
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  authoredPapers Paper[]        @relation("AuthorPaper")
+  reviews        Review[]       @relation("ReviewerReview")
+  coAuthorShips  CoAuthorship[]
+  conferences    Conference[]
+  expertises     Expertise[]
+  reviewedPapers Paper[]        @relation("ReviewedPapers")
+
+  @@index([id])
+}
+
+model Expertise {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+enum UserRole {
+  AUTHOR
+  REVIEWER
+  MANAGER
+  SUPERADMIN
+}
+
+enum ConferenceStatus {
+  ONGOING
+  UPCOMING
+  CLOSED
+}
+
+model Conference {
+  id           Int              @id @default(autoincrement())
+  name         String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  papers       Paper[]
+  status       ConferenceStatus
+  managerId    Int
+  manager      User             @relation(fields: [managerId], references: [id])
+  organization String
+
+  @@index([id, managerId])
+}
+
+model Paper {
+  id           Int            @id @default(autoincrement())
+  title        String
+  abstract     String
+  authorId     Int
+  conferenceId Int
+  fileURL      String
+  keywords     Keyword[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  author       User           @relation(name: "AuthorPaper", fields: [authorId], references: [id])
+  conference   Conference     @relation(fields: [conferenceId], references: [id])
+  reviews      Review[]
+  coAuthors    CoAuthorship[]
+  reviewerId   Int?
+  reviewer     User?          @relation("ReviewedPapers", fields: [reviewerId], references: [id])
+
+  @@index([authorId, conferenceId])
+}
+
+model Keyword {
+  id      Int    @id @default(autoincrement())
+  word    String
+  paperId Int
+  paper   Paper  @relation(fields: [paperId], references: [id])
+
+  @@index([paperId])
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  content    String
+  rating     Float
+  reviewerId Int
+  paperId    Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  reviewer   User     @relation(name: "ReviewerReview", fields: [reviewerId], references: [id])
+  paper      Paper    @relation(fields: [paperId], references: [id])
+
+  @@index([reviewerId, paperId])
+}
+
+model CoAuthorship {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  paperId Int
+  user    User  @relation(fields: [userId], references: [id])
+  paper   Paper @relation(fields: [paperId], references: [id])
+
+  @@index([userId, paperId])
+}
