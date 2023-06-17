@@ -19,10 +19,14 @@ app.use("/conferences", conferenceRoute);
 app.use("/papers", paperRoute);
 app.use("/reviewers", reviewerRoute);
 
-const port = 8080;
+const port = process.env.NODE_ENV === "production" ? process.env.PORT : 4000;
 
 app.get("/health-check", (req, res) => {
   res.json({ status: true, message: "Server is up and running" });
+});
+
+app.get("/", (req, res) => {
+  res.json({ status: true, message: "You shouldn't be here" });
 });
 
 app.listen(port, () => {
