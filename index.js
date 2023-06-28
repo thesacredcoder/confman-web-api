@@ -6,6 +6,7 @@ const userRoute = require("./routes/users");
 const conferenceRoute = require("./routes/conferences");
 const paperRoute = require("./routes/papers");
 const reviewerRoute = require("./routes/reviewer");
+const mailerRoute = require("./routes/mailer");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/users", userRoute);
 app.use("/conferences", conferenceRoute);
 app.use("/papers", paperRoute);
 app.use("/reviewers", reviewerRoute);
+app.use("/", mailerRoute);
 
 const port = process.env.NODE_ENV === "production" ? process.env.PORT : 4000;
 
