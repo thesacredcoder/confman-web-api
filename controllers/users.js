@@ -81,7 +81,7 @@ const signUpReviewer = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token, { sameSite: "none" });
+    res.cookie("token", token, { httpOnly: true });
 
     res
       .status(201)
@@ -128,7 +128,7 @@ const signin = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token);
+    res.cookie("token", token, { sameSite: "none" });
 
     res
       .status(200)
