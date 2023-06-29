@@ -2,8 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 
-const { sendSignUpEmail } = require("../utils/mailer");
-
 const prisma = new PrismaClient();
 
 const signUp = async (req, res) => {
@@ -38,13 +36,6 @@ const signUp = async (req, res) => {
     res
       .status(201)
       .json({ message: "User created successfully", data: newUser });
-
-    try {
-      await sendSignUpEmail(email, name);
-    } catch (error) {
-      console.error("Could not send email:", error);
-    }
-    
   } catch (error) {
     console.error("Error in signUpController:", error);
     return res.status(500).json({ message: "An error occurred during signup" });

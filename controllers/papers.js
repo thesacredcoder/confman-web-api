@@ -4,8 +4,6 @@ const { PrismaClient } = require("@prisma/client");
 const axios = require("axios");
 const prisma = new PrismaClient();
 
-const { sendPaperSubmittedEmail } = require("../utils/mailer");
-
 const bucketName = process.env.AWS_S3_BUCKET;
 const bucketRegion = process.env.AWS_S3_BUCKET_REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -95,28 +93,6 @@ const uploadPaper = async (req, res) => {
       message: "Paper uploaded successfully",
       result: { paperId: newPaper.id, mapped_reviwer: mappedReviewer },
     });
-
-    const detailsOfAuthors = coAuthorWithIds.map((coAuthor) => ({
-      name: coAuthor.name,
-      email: coAuthor.email,
-    }));
-
-    detailsOfAuthors.push({
-      name: req.user.name,
-      email: req.user.email,
-    });
-
-    const conferenceName = await prisma.conference.findUnique({
-      where: { id: conferenceId },
-      select: { name: true },
-    });
-
-    const paperDetails = {
-      paperTitle: title,
-      paperAbstract: abstract
-    }
-
-    sendPaperSubmittedEmail(detailsOfAuthors, conferenceName.name, paperDetails);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error uploading paper" });
