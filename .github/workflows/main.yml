@@ -12,6 +12,7 @@ on:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} # Only run this workflow if it is main branch on push event
     steps:
       - name: Checkout
         uses: actions/checkout@v2
