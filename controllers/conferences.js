@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const { sendConferenceCreatedEmail } = require("../utils/mailer");
+
 const createConference = async (req, res) => {
   const { name, description, startDate, endDate, status, organization } =
     req.body;
@@ -21,6 +23,16 @@ const createConference = async (req, res) => {
     res
       .status(201)
       .json({ message: "Conference created successfully", conference });
+
+    try {
+      await sendConferenceCreatedEmail(
+        req.user.email,
+        req.user.name,
+        conference.name
+      );
+    } catch (error) {
+      console.error("Could not send email:", error);
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error creating conference", error });
