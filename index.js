@@ -10,8 +10,7 @@ const mailerRoute = require("./routes/mailer");
 
 const app = express();
 
-// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
-app.use(cors({ origin: "*" }));
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
