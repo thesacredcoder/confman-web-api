@@ -21,7 +21,7 @@ app.use("/papers", paperRoute);
 app.use("/reviewers", reviewerRoute);
 app.use("/", mailerRoute);
 
-const port = process.env.NODE_ENV === "production" ? process.env.PORT : 4000;
+const port = process.env.PORT || 8080;
 
 app.get("/health-check", (req, res) => {
   res.json({ status: true, message: "Server is up and running" });

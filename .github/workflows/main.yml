@@ -1,0 +1,73 @@
+name: CICD
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} # Only run this workflow if it is main branch on push event
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Push Docker Image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: budhirajamadhav/confman:latest
+          cache-from: type=registry,ref=toanbk21096/go-github-actions:latest
+          cache-to: type=inline
+
+      - name: Deploy Image
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }} # Only run this workflow if it is main branch on push event
+    steps:
+      - uses: actions/checkout@v2
+
+      # Deploy to server
+      - name: multiple command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            docker stop confman-container || true && docker rmi budhirajamadhav/confman
+            docker pull budhirajamadhav/confman:latest
+            docker run -d --rm --name confman-container -p 8080:8080 budhirajamadhav/confman \
+            -e "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -e "AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}" \
+            -e "AWS_S3_BUCKET_REGION=${{ secrets.AWS_S3_BUCKET_REGION }}" \
+            -e "CLIENT_ID=${{ secrets.CLIENT_ID }}" \
+            -e "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" \
+            -e "REFRESH_TOKEN=${{ secrets.REFRESH_TOKEN }}" \
+            -e "EMAIl=${{ secrets.EMAIL }}"
