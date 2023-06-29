@@ -128,7 +128,7 @@ const signin = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token, { sameSite: "none" });
+    res.cookie("token", token);
 
     res
       .status(200)
